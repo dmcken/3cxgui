@@ -1,6 +1,7 @@
 
 
 # System
+import datetime
 import logging
 import urllib.parse
 
@@ -149,12 +150,14 @@ class cxgui:
         if result.status_code not in [200]:
             raise RuntimeError(f"Invalid HTTP status when pulling backup list in: {result.status_code}")
 
-        # If filter isn't None
+        raw_json = result.json()
+        if filter is not None:
             # Only return the entry matching that entry if it exists
+            output = list(filter(lambda x: x['filename'] == filter, raw_json))
+        else:
+            return raw_json
 
-        return result.json()
-
-    def backup_start(self,) -> str:
+    def backup_start(self, out_filename: str = None) -> str:
         """Trigger a new backup.
 
         Returns:
@@ -182,28 +185,32 @@ class cxgui:
             }
         }
         """
-        today = datetime.date.isoformat(datetime.date.today())
-        filename = f"CDRDump-{today}.zip"
-
+        if out_filename is None:
+            today = datetime.date.isoformat(datetime.date.today())
+            filename = f"CDRDump-{today}.zip"
+        else:
+            #  TODO: Add sanity checks.
+            filename = out_filename
 
         result = self._session.post(
             url=self._build_url('/xapi/v1/Backups/Pbx.Backup'),
             json={
                 'description': {
-                    "Name":filename,
+                    "Name": filename,
                     "Contents":{
-                        "Recordings":false,
-                        "EncryptBackup":false,
-                        "FQDN":true,
-                        "CallHistory":true,
-                        "License":true,
-                        "PhoneProvisioning":true,
-                        "Prompts":true,
-                        "VoiceMails":true,
-                        "DisableBackupCompression":false
-                    }
-                }
+                        "Recordings": False,
+                        "EncryptBackup": False,
+                        "FQDN": True,
+                        "CallHistory": True,
+                        "License": True,
+                        "PhoneProvisioning": True,
+                        "Prompts": True,
+                        "VoiceMails": True,
+                        "DisableBackupCompression": False,
+                    },
+                },
             },
+            headers=self._build_headers(),
         )
 
         if result.status_code not in [200,204]:
@@ -242,5 +249,6 @@ if __name__ == '__main__':
     x = cxgui(config['DOMAIN'])
     x.login(config['USERNAME'],config['PASSWORD'])
     pprint.pprint(x.backup_fetch_list())
+    x.backup_start()
 
 
