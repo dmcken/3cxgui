@@ -7,6 +7,7 @@ authors = [
   {name = "David M", email = "david.mcken@codepro.guru"},
 ]
 dependencies = [
+  "dotenv",
   "fake-useragent",
   "requests",
 ]
