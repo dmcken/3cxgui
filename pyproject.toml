@@ -1,0 +1,27 @@
+[build-system]
+requires      = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+authors = [
+  {name = "David M", email = "david.mcken@codepro.guru"},
+]
+dependencies = [
+  "fake-useragent",
+  "requests",
+]
+description = "Magical description"
+dynamic = ["version"]
+name = "3cxgui"
+readme = "README.md"
+requires-python = ">=3.9"
+
+[project.urls]
+Homepage = "https://example.com"
+Documentation = "https://readthedocs.org"
+Repository = "https://github.com/me/spam.git"
+Issues = "https://github.com/me/spam/issues"
+Changelog = "https://github.com/me/spam/blob/master/CHANGELOG.md"
+
+[tool.hatch.version]
+path = "src/3cxgui/__init__.py"
