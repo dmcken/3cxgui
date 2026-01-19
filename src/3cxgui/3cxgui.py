@@ -39,10 +39,8 @@ class cxgui:
     def _build_url(self, relative_url: str) -> str:
         """Build absolute URL from a relative path.
 
-
-
         Args:
-            relative_url (str): _description_
+            relative_url (str): Relative URL to build upon.
 
         Returns:
             str: _description_
@@ -52,10 +50,10 @@ class cxgui:
 
 
     def _build_headers(self, include_auth: bool = True) -> dict[str,str]:
-        """Build headers
+        """Build headers for use in requests.
 
         Returns:
-            dict[str,str]: _description_
+            dict[str,str]: Headers dictionary.
         """
         temp = {
             'Accept': 'application/json',
@@ -85,9 +83,20 @@ class cxgui:
         return
 
     def login(self, username: str, password: str) -> bool:
-        '''Login as a specific user.
+        """Login to 3CX server.
 
-        '''
+        Args:
+            username (str): Username to login as.
+            password (str): Password to login as.
+
+        Raises:
+            RuntimeError: _description_
+            RuntimeError: _description_
+            RuntimeError: _description_
+
+        Returns:
+            bool: True if we successfully logged in, False otherwise.
+        """
         self._username = username
         self._password = password
 
@@ -125,14 +134,23 @@ class cxgui:
         result_roken_json = token_result.json()
         self._auth_token = result_roken_json['access_token']
 
-        logger.error(f"Tokens:\n{self._access_token}\n{self._refresh_token}\n{self._auth_token}")
+        logger.error(f"Tokens:\n{self._access_token}\n" +\
+            f"{self._refresh_token}\n{self._auth_token}")
 
         return True
 
-    def backup_fetch_list(self, fname_filter: str = None):
-        '''Fetch the backup list.
+    def backup_fetch_list(self, fname_filter: str = None) -> dict:
+        """Fetch the backup list.
 
-        '''
+        Args:
+            fname_filter (str, optional): Filter the list by the filename specified. Defaults to None.
+
+        Raises:
+            RuntimeError: _description_
+
+        Returns:
+            dict: _description_
+        """
         logging.getLogger("urllib3").setLevel(logging.DEBUG)
 
         result = self._session.get(
