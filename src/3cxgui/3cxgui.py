@@ -127,7 +127,7 @@ class cxgui:
 
         return True
 
-    def backup_fetch_list(self, filter: str = None):
+    def backup_fetch_list(self, fname_filter: str = None):
         '''Fetch the backup list.
 
         '''
@@ -150,10 +150,12 @@ class cxgui:
         if result.status_code not in [200]:
             raise RuntimeError(f"Invalid HTTP status when pulling backup list in: {result.status_code}")
 
-        raw_json = result.json()
-        if filter is not None:
+        raw_json = result.json()['value']
+        pprint.pprint(raw_json)
+        if fname_filter is not None:
             # Only return the entry matching that entry if it exists
-            output = list(filter(lambda x: x['filename'] == filter, raw_json))
+            output = list(filter(lambda x: x['FileName'] == fname_filter, raw_json))
+            return output
         else:
             return raw_json
 
@@ -163,27 +165,6 @@ class cxgui:
         Returns:
             str: The filename of the backup
 
-
-
-        URL:
-        POST - https://<domain>/xapi/v1/Backups/Pbx.Backup
-
-        {
-            "description":{
-                "Name":"CDRDump-2026-01-18.zip",
-                "Contents":{
-                    "Recordings":false,
-                    "EncryptBackup":false,
-                    "FQDN":true,
-                    "CallHistory":true,
-                    "License":true,
-                    "PhoneProvisioning":true,
-                    "Prompts":true,
-                    "VoiceMails":true,
-                    "DisableBackupCompression":false
-                }
-            }
-        }
         """
         if out_filename is None:
             today = datetime.date.isoformat(datetime.date.today())
@@ -214,7 +195,12 @@ class cxgui:
         )
 
         if result.status_code not in [200,204]:
-            raise RuntimeError(f"Invalid HTTP status when creating backup: {result.status_code}")
+            if result.status_code in [400]:
+                data = result.json()
+                if data['error']['details'][0]['message'] == "WARNINGS.XAPI.DUPLICATE":
+                    logger.error("Duplicate backup detected")
+                    return filename
+            raise RuntimeError(f"Invalid HTTP status when creating backup: {result.status_code} -> {result.text}")
 
         return filename
 
@@ -242,13 +228,21 @@ class cxgui:
 if __name__ == '__main__':
     import dotenv
     import pprint
+    import time
 
     logging.basicConfig(level=logging.DEBUG)
 
     config = dotenv.dotenv_values()
     x = cxgui(config['DOMAIN'])
     x.login(config['USERNAME'],config['PASSWORD'])
-    pprint.pprint(x.backup_fetch_list())
-    x.backup_start()
 
+    output_fname = x.backup_start()
+    while (backup_obj := x.backup_fetch_list(output_fname)) == []:
+        time.sleep(2)
+
+    pprint.pprint(backup_obj)
+    x.backup_download(
+        backup_obj[0]['DownloadLink'],
+        backup_obj[0]['FileName']
+    )
 
