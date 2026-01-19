@@ -148,10 +148,16 @@ class cxgui:
 
         if result.status_code not in [200]:
             raise RuntimeError(f"Invalid HTTP status when pulling backup list in: {result.status_code}")
+
+
         return result.json()
 
-    def backup_start(self,):
-        '''Trigger a new backup.
+    def backup_start(self,) -> str:
+        """Trigger a new backup.
+
+        Returns:
+            str: The filename of the backup
+
 
 
         URL:
@@ -173,9 +179,12 @@ class cxgui:
                 }
             }
         }
-        '''
+        """
         today = datetime.date.isoformat(datetime.date.today())
         filename = f"CDRDump-{today}.zip"
+
+
+        return filename
 
     def backup_download(self, download_link: str, output_file: str):
         '''Download a backup from the 3CX server.
