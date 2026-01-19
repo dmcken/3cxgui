@@ -72,15 +72,17 @@ class cxgui:
         Args:
             response (_type_): _description_
         """
-        print("REQUEST")
-        print(response.request.method, response.request.url)
-        print(response.request.headers)
-        print(response.request.body)
+        logger.debug("REQUEST")
+        logger.debug(response.request.method, response.request.url)
+        logger.debug(response.request.headers)
+        logger.debug(response.request.body)
 
-        print("\nRESPONSE")
-        print(response.status_code)
-        print(response.headers)
-        print(response.text)
+        logger.debug("\nRESPONSE")
+        logger.debug(response.status_code)
+        logger.debug(response.headers)
+        logger.debug(response.text)
+
+        return
 
     def login(self, username: str, password: str) -> bool:
         '''Login as a specific user.
