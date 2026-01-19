@@ -126,7 +126,7 @@ class cxgui:
 
         return True
 
-    def backup_fetch_list(self,):
+    def backup_fetch_list(self, filter: str = None):
         '''Fetch the backup list.
 
         '''
@@ -149,6 +149,8 @@ class cxgui:
         if result.status_code not in [200]:
             raise RuntimeError(f"Invalid HTTP status when pulling backup list in: {result.status_code}")
 
+        # If filter isn't None
+            # Only return the entry matching that entry if it exists
 
         return result.json()
 
