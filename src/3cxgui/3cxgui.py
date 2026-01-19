@@ -184,6 +184,29 @@ class cxgui:
         filename = f"CDRDump-{today}.zip"
 
 
+        result = self._session.post(
+            url=self._build_url('/xapi/v1/Backups/Pbx.Backup'),
+            json={
+                'description': {
+                    "Name":filename,
+                    "Contents":{
+                        "Recordings":false,
+                        "EncryptBackup":false,
+                        "FQDN":true,
+                        "CallHistory":true,
+                        "License":true,
+                        "PhoneProvisioning":true,
+                        "Prompts":true,
+                        "VoiceMails":true,
+                        "DisableBackupCompression":false
+                    }
+                }
+            },
+        )
+
+        if result.status_code not in [200,204]:
+            raise RuntimeError(f"Invalid HTTP status when creating backup: {result.status_code}")
+
         return filename
 
     def backup_download(self, download_link: str, output_file: str):
