@@ -142,7 +142,7 @@ class CXGui:
         result_roken_json = token_result.json()
         self._auth_token = result_roken_json['access_token']
 
-        logger.error(f"Tokens:\n{self._access_token}\n" +\
+        logger.debug(f"Tokens:\n{self._access_token}\n" +\
             f"{self._refresh_token}\n{self._auth_token}")
 
         return True
