@@ -11,18 +11,18 @@ dependencies = [
   "fake-useragent",
   "requests",
 ]
-description = "Magical description"
+description = "3CX Web GUI Automation"
 dynamic = ["version"]
 name = "cxgui"
 readme = "README.md"
 requires-python = ">=3.9"
 
 [project.urls]
-Homepage = "https://example.com"
-Documentation = "https://readthedocs.org"
-Repository = "https://github.com/me/spam.git"
-Issues = "https://github.com/me/spam/issues"
-Changelog = "https://github.com/me/spam/blob/master/CHANGELOG.md"
+Homepage = "https://github.com/dmcken/3cxgui"
+Documentation = "https://github.com/dmcken/3cxgui"
+Repository = "https://github.com/dmcken/3cxgui.git"
+Issues = "https://github.com/dmcken/3cxgui/issues"
+# Changelog = "https://github.com/me/spam/blob/master/CHANGELOG.md"
 
 [tool.hatch.version]
 path = "src/cxgui/__init__.py"
