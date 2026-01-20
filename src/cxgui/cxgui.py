@@ -180,7 +180,6 @@ class cxgui:
             raise HttpError(f"Invalid HTTP status when pulling backup list in: {result.status_code}")
 
         raw_json = result.json()['value']
-        pprint.pprint(raw_json)
         if fname_filter is not None:
             # Only return the entry matching that entry if it exists
             output = list(filter(lambda x: x['FileName'] == fname_filter, raw_json))
@@ -289,16 +288,15 @@ if __name__ == '__main__':
     while (backup_obj := x.backup_fetch_list(output_fname)) == []:
         time.sleep(2)
 
-    pprint.pprint(backup_obj)
     x.backup_download(
         backup_obj[0]['DownloadLink'],
-        backup_obj[0]['FileName']
+        backup_obj[0]['FileName'],
     )
 
     with zipfile.ZipFile(output_fname) as archive:
         for curr_file in ['cdrbilling','cdroutput']:
-            with archive.open('DbTables/{curr_file}.csv') as f_in, \
-                open('{curr_file}.csv', 'w', encoding='utf-8') as f_out:
+            with archive.open(f'DbTables/{curr_file}.csv') as f_in, \
+                open(f'{curr_file}.csv', 'w', encoding='utf-8') as f_out:
                 f_out.write(f_in.read().decode('utf-8'))
 
     x.backup_delete(output_fname)
