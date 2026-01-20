@@ -69,7 +69,6 @@ class CXGui:
             'User-Agent': self._user_agent_str,
         }
         if include_auth is True:
-            logger.error(f"Including auth")
             temp['Authorization'] = f"Bearer {self._auth_token}"
         return temp
 
