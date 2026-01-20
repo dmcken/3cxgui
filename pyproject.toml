@@ -13,7 +13,7 @@ dependencies = [
 ]
 description = "Magical description"
 dynamic = ["version"]
-name = "3cxgui"
+name = "cxgui"
 readme = "README.md"
 requires-python = ">=3.9"
 
@@ -25,4 +25,4 @@ Issues = "https://github.com/me/spam/issues"
 Changelog = "https://github.com/me/spam/blob/master/CHANGELOG.md"
 
 [tool.hatch.version]
-path = "src/3cxgui/__init__.py"
+path = "src/cxgui/__init__.py"
