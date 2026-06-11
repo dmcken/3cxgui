@@ -19,7 +19,8 @@ class GUIError(RuntimeError):
 class CXGui:
     '''3CX GUI main class'''
 
-    def __init__(self, domain: str, ssl: bool = True):
+    def __init__(self, domain: str, ssl: bool = True,
+                 tokens: None | dict[str,str] = None):
         """Constructor.
 
         Args:
@@ -39,11 +40,28 @@ class CXGui:
         self._username = None
         self._password = None
         self._cookie_jar = None
-        self._access_token = None
-        self._refresh_token = None
-        self._auth_token = None
+        if tokens:
+            self._access_token = tokens['access_token']
+            self._refresh_token = tokens['refresh_token']
+            self._auth_token = tokens['auth_token']
+        else:
+            self._access_token = None
+            self._refresh_token = None
+            self._auth_token = None
         self._session = requests.Session()
         self._timeout = 300 # 5 minutes
+
+    def dump_tokens(self) -> dict[str,str|None]:
+        """Dump login tokens for use later on.
+
+        Returns:
+            dict[str,str|None]: Dictionary of tokens to save for later use.
+        """
+        return {
+            'access_token': self._access_token,
+            'refresh_token': self._refresh_token,
+            'auth_token': self._auth_token,
+        }
 
     def _build_url(self, relative_url: str) -> str:
         """Build absolute URL from a relative path.
@@ -209,7 +227,7 @@ class CXGui:
             RuntimeError: Invalid status code.
 
         Returns:
-            str: Filename to set for the backup.
+            str: Filename actually used for the backup.
         """
         if out_filename is None:
             today = datetime.date.isoformat(datetime.date.today())
@@ -315,8 +333,8 @@ class CXGui:
 
 if __name__ == '__main__':
     import dotenv
+    import pprint
     import time
-    import zipfile
 
     logging.basicConfig(level=logging.DEBUG)
 
@@ -324,9 +342,15 @@ if __name__ == '__main__':
     x = CXGui(config['DOMAIN'])
     x.login(config['USERNAME'],config['PASSWORD'])
 
-    for _ in range(3):
-        x.fetch_status()
-        time.sleep(10)
 
+    x.fetch_status()
 
+    time.sleep(10)
 
+    transit_tokens = x.dump_tokens()
+
+    pprint.pprint(transit_tokens)
+
+    x1 = CXGui(config['DOMAIN'], tokens=transit_tokens)
+
+    pprint.pprint(x1.fetch_status())
