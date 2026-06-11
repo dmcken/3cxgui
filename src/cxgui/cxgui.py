@@ -349,6 +349,8 @@ if __name__ == '__main__':
 
     transit_tokens = x.dump_tokens()
 
+    # Save dictionary to JSON in a file and load back.
+
     pprint.pprint(transit_tokens)
 
     x1 = CXGui(config['DOMAIN'], tokens=transit_tokens)
