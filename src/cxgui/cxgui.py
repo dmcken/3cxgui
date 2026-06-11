@@ -301,8 +301,9 @@ class CXGui:
 
         if raw_json:
             return result.text
-        raw_json = result.json()
-        return raw_json
+
+        result_data = result.json()
+        return result_data
 
 if __name__ == '__main__':
     import dotenv
