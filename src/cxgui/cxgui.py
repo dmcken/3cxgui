@@ -102,9 +102,17 @@ class CXGui:
 
         Returns:
             bool: True if we successfully logged in, False otherwise.
+
+
+        At the end of a successful login 3 values are set:
+        - _access_token
+        - _refresh_token
+        - _auth_token
         """
         self._username = username
         self._password = password
+
+        # TODO: Add checks if the tokens are set (and valid)
 
         result = self._session.post(
             url=self._build_url('/webclient/api/Login/GetAccessToken'),
