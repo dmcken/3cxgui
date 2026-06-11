@@ -280,6 +280,29 @@ class CXGui:
         if result.status_code not in [204]:
             raise HttpError(f"Invalid HTTP code '{result.status_code}' deleting backup")
 
+    def fetch_status(self, raw_json: bool = True) -> str|dict[str,str|dict]:
+        '''Fetch 3CX system status.
+
+
+        https://<domain>/xapi/v1/SystemStatus
+        '''
+        result = self._session.get(
+            url=self._build_url('/xapi/v1/SystemStatus'),
+            headers=self._build_headers(),
+            timeout=self._timeout,
+        )
+        # self._display_debug(result)
+
+        if result.status_code not in [200]:
+            raise HttpError(
+                "Invalid HTTP status when pulling backup list in: " +
+                f"{result.status_code}"
+            )
+
+        if raw_json:
+            return result.text
+        raw_json = result.json()
+        return raw_json
 
 if __name__ == '__main__':
     import dotenv
@@ -292,19 +315,9 @@ if __name__ == '__main__':
     x = CXGui(config['DOMAIN'])
     x.login(config['USERNAME'],config['PASSWORD'])
 
-    output_fname = x.backup_start()
-    while (backup_obj := x.backup_fetch_list(output_fname)) == []:
-        time.sleep(2)
+    for _ in range(3):
+        x.fetch_status()
+        time.sleep(10)
 
-    x.backup_download(
-        backup_obj[0]['DownloadLink'],
-        backup_obj[0]['FileName'],
-    )
 
-    with zipfile.ZipFile(output_fname) as archive:
-        for curr_file in ['cdrbilling','cdroutput']:
-            with archive.open(f'DbTables/{curr_file}.csv') as f_in, \
-                open(f'{curr_file}.csv', 'w', encoding='utf-8') as f_out:
-                f_out.write(f_in.read().decode('utf-8'))
 
-    x.backup_delete(output_fname)
