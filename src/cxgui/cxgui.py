@@ -49,7 +49,7 @@ class CXGui:
             self._refresh_token = None
             self._auth_token = None
         self._session = requests.Session()
-        self._timeout = 300 # 5 minutes
+        self._timeout = 60 # 1 minute
 
     def dump_tokens(self) -> dict[str,str|None]:
         """Dump login tokens for use later on.
