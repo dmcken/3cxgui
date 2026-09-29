@@ -20,7 +20,7 @@ class CXGui:
     '''3CX GUI main class'''
 
     def __init__(self, domain: str, ssl: bool = True,
-                 tokens: None | dict[str,str] = None):
+                 tokens: dict[str,str] | None = None):
         """Constructor.
 
         Args:
@@ -173,7 +173,7 @@ class CXGui:
 
         return True
 
-    def backup_fetch_list(self, fname_filter: str = None) -> dict:
+    def backup_fetch_list(self, fname_filter: str | None = None) -> dict:
         """Fetch the backup list.
 
         Args:
@@ -216,7 +216,7 @@ class CXGui:
             return output
         return raw_json
 
-    def backup_start(self, out_filename: str = None) -> str:
+    def backup_start(self, out_filename: str | None = None) -> str:
         """Trigger a new backup.
 
         Args:
@@ -332,9 +332,10 @@ class CXGui:
         return result_data
 
 if __name__ == '__main__':
-    import dotenv
     import pprint
     import time
+
+    import dotenv
 
     logging.basicConfig(level=logging.DEBUG)
 

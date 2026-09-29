@@ -1,0 +1,109 @@
+'''Tests for cxgui.CXGui'''
+import re
+
+import pytest
+
+import cxgui
+
+DOMAIN = 'pbx.example.com'
+BASE = f'https://{DOMAIN}'
+TOKENS = {
+    'access_token': 'access',
+    'refresh_token': 'refresh',
+    'auth_token': 'auth',
+}
+
+
+@pytest.fixture
+def gui():
+    return cxgui.CXGui(DOMAIN, tokens=TOKENS)
+
+
+def test_version():
+    assert re.fullmatch(r'\d+\.\d+\.\d+', cxgui.__version__)
+
+
+@pytest.mark.parametrize(('domain', 'ssl', 'path', 'expected'), [
+    (DOMAIN, True, '/xapi/v1/Backups', f'{BASE}/xapi/v1/Backups'),
+    (DOMAIN, True, 'xapi/v1/Backups', f'{BASE}/xapi/v1/Backups'),
+    (f' {DOMAIN}/ ', True, '/x', f'{BASE}/x'),
+    (DOMAIN, False, '/x', f'http://{DOMAIN}/x'),
+])
+def test_build_url(domain, ssl, path, expected):
+    assert cxgui.CXGui(domain, ssl=ssl)._build_url(path) == expected
+
+
+def test_tokens_round_trip(gui):
+    assert gui.dump_tokens() == TOKENS
+    assert cxgui.CXGui(DOMAIN, tokens=gui.dump_tokens()).dump_tokens() == TOKENS
+
+
+def test_no_tokens():
+    assert cxgui.CXGui(DOMAIN).dump_tokens() == dict.fromkeys(TOKENS)
+
+
+def test_login(requests_mock):
+    requests_mock.post(f'{BASE}/webclient/api/Login/GetAccessToken', json={
+        'Status': 'AuthSuccess',
+        'Token': {
+            'token_type': 'Bearer',
+            'access_token': 'access',
+            'refresh_token': 'refresh',
+        },
+    })
+    requests_mock.post(f'{BASE}/connect/token', json={'access_token': 'auth'})
+
+    gui = cxgui.CXGui(DOMAIN)
+    assert gui.login('user', 'pass') is True
+    assert gui.dump_tokens() == TOKENS
+    assert requests_mock.request_history[0].json()['Username'] == 'user'
+
+
+def test_login_http_error(requests_mock):
+    requests_mock.post(f'{BASE}/webclient/api/Login/GetAccessToken', status_code=401)
+    with pytest.raises(cxgui.HttpError):
+        cxgui.CXGui(DOMAIN).login('user', 'pass')
+
+
+def test_login_bad_status(requests_mock):
+    requests_mock.post(f'{BASE}/webclient/api/Login/GetAccessToken',
+                       json={'Status': 'AuthFailed'})
+    with pytest.raises(cxgui.GUIError):
+        cxgui.CXGui(DOMAIN).login('user', 'pass')
+
+
+def test_backup_fetch_list(gui, requests_mock):
+    backups = [{'FileName': 'a.zip'}, {'FileName': 'b.zip'}]
+    requests_mock.get(f'{BASE}/xapi/v1/Backups', json={'value': backups})
+
+    assert gui.backup_fetch_list() == backups
+    assert gui.backup_fetch_list('b.zip') == [{'FileName': 'b.zip'}]
+    assert requests_mock.last_request.headers['Authorization'] == 'Bearer auth'
+
+
+def test_backup_start(gui, requests_mock):
+    requests_mock.post(f'{BASE}/xapi/v1/Backups/Pbx.Backup', status_code=204)
+    assert gui.backup_start('test.zip') == 'test.zip'
+    assert re.fullmatch(r'CDRDump-\d{4}-\d{2}-\d{2}\.zip', gui.backup_start())
+
+
+def test_backup_start_duplicate(gui, requests_mock):
+    requests_mock.post(f'{BASE}/xapi/v1/Backups/Pbx.Backup', status_code=400, json={
+        'error': {'details': [{'message': 'WARNINGS.XAPI.DUPLICATE'}]},
+    })
+    assert gui.backup_start('test.zip') == 'test.zip'
+
+
+def test_backup_delete(gui, requests_mock):
+    requests_mock.delete(f"{BASE}/xapi/v1/Backups('test.zip')", status_code=204)
+    gui.backup_delete('test.zip')
+
+    requests_mock.delete(f"{BASE}/xapi/v1/Backups('test.zip')", status_code=404)
+    with pytest.raises(cxgui.HttpError):
+        gui.backup_delete('test.zip')
+
+
+def test_fetch_status(gui, requests_mock):
+    requests_mock.get(f'{BASE}/xapi/v1/SystemStatus', json={'Version': '20.0'})
+    assert gui.fetch_status() == '{"Version": "20.0"}'
+    assert gui.fetch_status(raw_json=False) == {'Version': '20.0'}

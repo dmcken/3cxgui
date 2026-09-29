@@ -1,4 +1,6 @@
 # 3cxgui
+[![Tests](https://github.com/dmcken/3cxgui/actions/workflows/tests.yml/badge.svg)](https://github.com/dmcken/3cxgui/actions/workflows/tests.yml)
+[![Ruff](https://github.com/dmcken/3cxgui/actions/workflows/ruff.yml/badge.svg)](https://github.com/dmcken/3cxgui/actions/workflows/ruff.yml)
 
 A 3CX Web GUI automation library.
 
@@ -16,7 +18,7 @@ should pin to a released tag instead so builds don't silently change
 underneath them:
 
 ```bash
-pip install git+https://github.com/dmcken/3cxgui.git@v0.1.0
+pip install git+https://github.com/dmcken/3cxgui.git@v0.1.1
 ```
 
 Available tags: https://github.com/dmcken/3cxgui/tags
