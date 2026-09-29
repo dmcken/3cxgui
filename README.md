@@ -18,7 +18,7 @@ should pin to a released tag instead so builds don't silently change
 underneath them:
 
 ```bash
-pip install git+https://github.com/dmcken/3cxgui.git@v0.1.1
+pip install git+https://github.com/dmcken/3cxgui.git@v0.1.2
 ```
 
 Available tags: https://github.com/dmcken/3cxgui/tags
